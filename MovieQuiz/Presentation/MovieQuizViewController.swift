@@ -56,7 +56,6 @@ final class MovieQuizViewController: UIViewController {
             imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
             imageView.layer.cornerRadius = 20
         }
-        
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel{
@@ -106,6 +105,7 @@ fileprivate struct QuizResultsViewModel {
   let text: String
   let buttonText: String
 }
+
 
 fileprivate struct MockData{
     static let mockQuestions: [QuizQuestion] = [

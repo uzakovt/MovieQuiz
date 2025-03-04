@@ -8,7 +8,9 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var counterLabel: UILabel!
     @IBOutlet private weak var textLabel: UILabel!
-
+    @IBOutlet weak var yesButton: UIButton!
+    @IBOutlet weak var noButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         showQuizStep(quiz: convert(model: questions[0]))
@@ -19,6 +21,8 @@ final class MovieQuizViewController: UIViewController {
         let isCorrect: Bool =
             questions[questionNumber].correctAnswer == userAnswer
         showAnswerResult(isCorrect: isCorrect)
+        noButton.isHidden = true
+        yesButton.isHidden = true
     }
 
     private func showNextQuestionOrResults() {
@@ -44,6 +48,8 @@ final class MovieQuizViewController: UIViewController {
         controlBorder(reset: false, isCorrect: isCorrect)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.showNextQuestionOrResults()
+            self.noButton.isHidden = false
+            self.yesButton.isHidden = false
         }
     }
 
@@ -80,7 +86,6 @@ final class MovieQuizViewController: UIViewController {
                 model: self.questions[self.questionNumber])
             self.showQuizStep(quiz: firstQuestion)
         }
-
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }

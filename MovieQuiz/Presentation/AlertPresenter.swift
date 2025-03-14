@@ -1,6 +1,6 @@
 import UIKit
 
-class AlertPresenter: AlertPresenterProtocol{
+final class AlertPresenter: AlertPresenterProtocol{
     weak var delegate: AlertPresenterDelegate?
     func showAlert(alertData: AlertModel?){
         guard let alertData else {

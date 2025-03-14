@@ -1,6 +1,6 @@
 import Foundation
 
-class QuizLogic: QuizLogicProtocol {
+final class QuizLogic: QuizLogicProtocol {
     var questionNumber: Int = 0
     var correctAnswers: Int = 0
     var questionsAmount: Int = 10

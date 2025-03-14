@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController{
+final class MovieQuizViewController: UIViewController {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
@@ -14,10 +14,9 @@ final class MovieQuizViewController: UIViewController{
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         initDelegates()
     }
-    
 
     @IBAction private func answerButtonPressed(_ sender: UIButton) {
         guard let currentQuestion else { return }
@@ -27,24 +26,24 @@ final class MovieQuizViewController: UIViewController{
         noButton.isHidden = true
         yesButton.isHidden = true
     }
-    
-    private func initDelegates(){
+
+    private func initDelegates() {
         //QuestionFactoryDelegate initialization
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
-        
+
         //AlertpresenterDelegate initialization
         let alertPresenter = AlertPresenter()
         alertPresenter.delegate = self
         self.alertPresenter = alertPresenter
-        
+
         //QuizLogicDelegate initialization
         let quizLogic = QuizLogic()
         quizLogic.delegate = self
         quizLogic.intialize()
         self.quizLogic = quizLogic
-        
+
         questionFactory.requestNextQuestion()
     }
 
@@ -53,7 +52,8 @@ final class MovieQuizViewController: UIViewController{
         return QuizStepViewModel(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(quizLogic.questionNumber + 1)/\(quizLogic.questionsAmount)")
+            questionNumber:
+                "\(quizLogic.questionNumber + 1)/\(quizLogic.questionsAmount)")
     }
 
     private func showQuizStep(quiz step: QuizStepViewModel) {
@@ -64,7 +64,7 @@ final class MovieQuizViewController: UIViewController{
 }
 
 // MARK: - AlertPresenterDelegate
-extension MovieQuizViewController: AlertPresenterDelegate{
+extension MovieQuizViewController: AlertPresenterDelegate {
     func didPresentAlert(alert: UIAlertController?) {
         guard let alert else { return }
         present(alert, animated: true, completion: nil)
@@ -72,21 +72,22 @@ extension MovieQuizViewController: AlertPresenterDelegate{
 }
 
 // MARK: - QuestionFactoryDelegate
-extension MovieQuizViewController: QuestionFactoryDelegate{
+extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(question: QuizQuestion?) {
         guard let question else { return }
-        
+
         currentQuestion = question
         let viewModel = convert(model: question)
         if let viewModel {
-            DispatchQueue.main.async{ [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.showQuizStep(quiz: viewModel)
-            }}
-        
-    }}
+            }
+        }
+    }
+}
 
 // MARK: - QuizLogicDelegate
-extension MovieQuizViewController: QuizLogicDelegate{
+extension MovieQuizViewController: QuizLogicDelegate {
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             [weak self] in
@@ -96,7 +97,7 @@ extension MovieQuizViewController: QuizLogicDelegate{
             self.yesButton.isHidden = false
         }
     }
-    
+
     func controlBorder(reset: Bool, isCorrect: Bool = false) {
         if reset {
             imageView.layer.masksToBounds = true

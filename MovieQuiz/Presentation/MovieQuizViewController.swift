@@ -1,8 +1,6 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
-    private var questionFactory: QuestionFactoryProtocol?
-    private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
     private var quizLogic: QuizLogicProtocol?
 
@@ -16,47 +14,24 @@ final class MovieQuizViewController: UIViewController {
         super.viewDidLoad()
 
         initDelegates()
+        quizLogic?.requestFirstQuestion()
     }
 
     @IBAction private func answerButtonPressed(_ sender: UIButton) {
-        guard let currentQuestion else { return }
         let userAnswer = sender.tag != 0
-        let isCorrect = currentQuestion.correctAnswer == userAnswer
-        quizLogic?.showAnswerResult(isCorrect: isCorrect)
+        quizLogic?.showAnswerResult(userAnswer: userAnswer)
         noButton.isHidden = true
         yesButton.isHidden = true
     }
 
     private func initDelegates() {
-        //QuestionFactoryDelegate initialization
-        let questionFactory = QuestionFactory()
-        questionFactory.delegate = self
-        self.questionFactory = questionFactory
-
         //AlertpresenterDelegate initialization
-        let alertPresenter = AlertPresenter()
+        let alertPresenter = ResultAlertPresenter()
         alertPresenter.delegate = self
         self.alertPresenter = alertPresenter
 
         //QuizLogicDelegate initialization
         quizLogic = QuizLogic(delegate: self)
-
-        questionFactory.requestNextQuestion()
-    }
-
-    private func convert(model: QuizQuestion) -> QuizStepViewModel? {
-        guard let quizLogic else { return nil }
-        return QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber:
-                "\(quizLogic.questionNumber + 1)/\(quizLogic.questionsAmount)")
-    }
-
-    private func showQuizStep(quiz step: QuizStepViewModel) {
-        imageView.image = step.image
-        counterLabel.text = step.questionNumber
-        textLabel.text = step.question
     }
 }
 
@@ -68,22 +43,16 @@ extension MovieQuizViewController: AlertPresenterDelegate {
     }
 }
 
-// MARK: - QuestionFactoryDelegate
-extension MovieQuizViewController: QuestionFactoryDelegate {
-    func didRecieveNextQuestion(question: QuizQuestion?) {
-        guard let question else { return }
-        currentQuestion = question
-        let viewModel = convert(model: question)
-        if let viewModel {
-            DispatchQueue.main.async {
-                self.showQuizStep(quiz: viewModel)
-            }
-        }
-    }
-}
-
 // MARK: - QuizLogicDelegate
 extension MovieQuizViewController: QuizLogicDelegate {
+    func showQuizStep(quiz step: QuizStepViewModel) {
+        DispatchQueue.main.async {
+            self.imageView.image = step.image
+            self.counterLabel.text = step.questionNumber
+            self.textLabel.text = step.question
+        }
+    }
+
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             nextStep()

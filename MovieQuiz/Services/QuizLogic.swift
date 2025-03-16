@@ -1,6 +1,7 @@
 import Foundation
+import UIKit
 
-final class QuizLogic: QuizLogicProtocol {
+final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
     var questionNumber: Int = 0
     var correctAnswers: Int = 0
     var questionsAmount: Int = 10
@@ -9,15 +10,16 @@ final class QuizLogic: QuizLogicProtocol {
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
-    private var statisticService: StatisticServiceProtocol = StatisticService()
+    private var statisticService: StatisticServiceProtocol =
+        StatisticServiceImplementation()
 
-    init(delegate: QuizLogicDelegate){
+    init(delegate: QuizLogicDelegate) {
         self.delegate = delegate
         let questionFactory = QuestionFactory()
-        questionFactory.delegate = delegate.self as? QuestionFactoryDelegate
+        questionFactory.delegate = self
         self.questionFactory = questionFactory
 
-        let alertPresenter = AlertPresenter()
+        let alertPresenter = ResultAlertPresenter()
         alertPresenter.delegate = delegate.self as? AlertPresenterDelegate
         self.alertPresenter = alertPresenter
     }
@@ -33,15 +35,20 @@ final class QuizLogic: QuizLogicProtocol {
                 """,
             buttonText: "Сыграть еще раз",
             completion: {
+                [weak self] in
+                guard let self else { return }
                 self.questionNumber = 0
                 self.correctAnswers = 0
                 self.questionFactory?.requestNextQuestion()
-            })
-
+            }
+        )
         alertPresenter?.showAlert(alertData: quizResult)
     }
 
-    func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(userAnswer: Bool) {
+        guard let currentQuestion else { return }
+
+        let isCorrect = currentQuestion.correctAnswer == userAnswer
         if isCorrect {
             correctAnswers += 1
         }
@@ -62,5 +69,26 @@ final class QuizLogic: QuizLogicProtocol {
             questionFactory?.requestNextQuestion()
         }
         delegate?.controlBorder(reset: true, isCorrect: false)  // optimise
+    }
+
+    private func convert(model: QuizQuestion) -> QuizStepViewModel? {
+        return QuizStepViewModel(
+            image: UIImage(named: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber:
+                "\(questionNumber + 1)/\(questionsAmount)")
+    }
+
+    func requestFirstQuestion() {
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didRecieveNextQuestion(question: QuizQuestion?) {
+        guard let question else { return }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        if let viewModel {
+            delegate?.showQuizStep(quiz: viewModel)
+        }
     }
 }

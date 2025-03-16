@@ -46,7 +46,7 @@ final class StatisticService: StatisticServiceProtocol {
         correctAnswers += gameResult.correct
         gamesCount += 1
 
-        if gameResult.isBetterTham(bestGame) {
+        if gameResult.isBetterThan(bestGame) {
             bestGame = gameResult
         }
     }

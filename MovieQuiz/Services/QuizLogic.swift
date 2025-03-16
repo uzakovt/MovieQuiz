@@ -11,7 +11,8 @@ final class QuizLogic: QuizLogicProtocol {
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticServiceProtocol = StatisticService()
 
-    func intialize() {
+    init(delegate: QuizLogicDelegate){
+        self.delegate = delegate
         let questionFactory = QuestionFactory()
         questionFactory.delegate = delegate.self as? QuestionFactoryDelegate
         self.questionFactory = questionFactory

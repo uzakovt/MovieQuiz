@@ -20,8 +20,8 @@ final class MovieQuizViewController: UIViewController {
 
     @IBAction private func answerButtonPressed(_ sender: UIButton) {
         guard let currentQuestion else { return }
-        let userAnswer: Bool = sender.tag != 0
-        let isCorrect: Bool = currentQuestion.correctAnswer == userAnswer
+        let userAnswer = sender.tag != 0
+        let isCorrect = currentQuestion.correctAnswer == userAnswer
         quizLogic?.showAnswerResult(isCorrect: isCorrect)
         noButton.isHidden = true
         yesButton.isHidden = true
@@ -39,10 +39,7 @@ final class MovieQuizViewController: UIViewController {
         self.alertPresenter = alertPresenter
 
         //QuizLogicDelegate initialization
-        let quizLogic = QuizLogic()
-        quizLogic.delegate = self
-        quizLogic.intialize()
-        self.quizLogic = quizLogic
+        quizLogic = QuizLogic(delegate: self)
 
         questionFactory.requestNextQuestion()
     }
@@ -75,12 +72,11 @@ extension MovieQuizViewController: AlertPresenterDelegate {
 extension MovieQuizViewController: QuestionFactoryDelegate {
     func didRecieveNextQuestion(question: QuizQuestion?) {
         guard let question else { return }
-
         currentQuestion = question
         let viewModel = convert(model: question)
         if let viewModel {
-            DispatchQueue.main.async { [weak self] in
-                self?.showQuizStep(quiz: viewModel)
+            DispatchQueue.main.async {
+                self.showQuizStep(quiz: viewModel)
             }
         }
     }
@@ -90,8 +86,6 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
 extension MovieQuizViewController: QuizLogicDelegate {
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            [weak self] in
-            guard let self else { return }
             nextStep()
             self.noButton.isHidden = false
             self.yesButton.isHidden = false

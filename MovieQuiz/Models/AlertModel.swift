@@ -4,5 +4,5 @@ struct AlertModel{
     let title: String
     let text: String
     let buttonText: String
-    var completion : () -> Void
+    let completion : () -> Void
 }

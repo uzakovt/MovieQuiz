@@ -1,72 +1,76 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
-    // MARK: - Lifecycle
+    private var alertPresenter: AlertPresenterProtocol?
+    private var quizLogic: QuizLogicProtocol?
+
+    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var counterLabel: UILabel!
+    @IBOutlet private weak var textLabel: UILabel!
+    @IBOutlet private weak var yesButton: UIButton!
+    @IBOutlet private weak var noButton: UIButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        initDelegates()
+        quizLogic?.requestFirstQuestion()
+    }
+
+    @IBAction private func answerButtonPressed(_ sender: UIButton) {
+        let userAnswer = sender.tag != 0
+        quizLogic?.showAnswerResult(userAnswer: userAnswer)
+        noButton.isHidden = true
+        yesButton.isHidden = true
+    }
+
+    private func initDelegates() {
+        //AlertpresenterDelegate initialization
+        let alertPresenter = ResultAlertPresenter()
+        alertPresenter.delegate = self
+        self.alertPresenter = alertPresenter
+
+        //QuizLogicDelegate initialization
+        quizLogic = QuizLogic(delegate: self)
     }
 }
 
-/*
- Mock-данные
- 
- 
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
- 
- 
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- 
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- 
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- 
- 
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-*/
+// MARK: - AlertPresenterDelegate
+extension MovieQuizViewController: AlertPresenterDelegate {
+    func didPresentAlert(alert: UIAlertController?) {
+        guard let alert else { return }
+        present(alert, animated: true, completion: nil)
+    }
+}
+
+// MARK: - QuizLogicDelegate
+extension MovieQuizViewController: QuizLogicDelegate {
+    func showQuizStep(quiz step: QuizStepViewModel) {
+        DispatchQueue.main.async {
+            self.imageView.image = step.image
+            self.counterLabel.text = step.questionNumber
+            self.textLabel.text = step.question
+        }
+    }
+
+    func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            nextStep()
+            self.noButton.isHidden = false
+            self.yesButton.isHidden = false
+        }
+    }
+
+    func controlBorder(reset: Bool, isCorrect: Bool = false) {
+        if reset {
+            imageView.layer.masksToBounds = true
+            imageView.layer.borderWidth = 0
+        } else {
+            imageView.layer.masksToBounds = true
+            imageView.layer.borderWidth = 8
+            imageView.layer.borderColor =
+                isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+            imageView.layer.cornerRadius = 20
+        }
+    }
+}

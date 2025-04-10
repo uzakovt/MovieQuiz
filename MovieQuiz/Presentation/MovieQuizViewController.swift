@@ -1,7 +1,6 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
-    private var alertPresenter: AlertPresenterProtocol?
     private var quizLogic: QuizLogicProtocol?
 
     @IBOutlet private weak var imageView: UIImageView!
@@ -9,29 +8,21 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var yesButton: UIButton!
     @IBOutlet private weak var noButton: UIButton!
-
+    @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        initDelegates()
-        quizLogic?.requestFirstQuestion()
+        quizLogic = QuizLogic(delegate: self)
+        
+        isLoading(true)
+        quizLogic?.loadData()
     }
 
     @IBAction private func answerButtonPressed(_ sender: UIButton) {
         let userAnswer = sender.tag != 0
         quizLogic?.showAnswerResult(userAnswer: userAnswer)
-        noButton.isHidden = true
-        yesButton.isHidden = true
-    }
-
-    private func initDelegates() {
-        //AlertpresenterDelegate initialization
-        let alertPresenter = ResultAlertPresenter()
-        alertPresenter.delegate = self
-        self.alertPresenter = alertPresenter
-
-        //QuizLogicDelegate initialization
-        quizLogic = QuizLogic(delegate: self)
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
     }
 }
 
@@ -54,10 +45,10 @@ extension MovieQuizViewController: QuizLogicDelegate {
     }
 
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
             nextStep()
-            self.noButton.isHidden = false
-            self.yesButton.isHidden = false
+            self.noButton.isEnabled = true
+            self.yesButton.isEnabled = true
         }
     }
 
@@ -71,6 +62,18 @@ extension MovieQuizViewController: QuizLogicDelegate {
             imageView.layer.borderColor =
                 isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
             imageView.layer.cornerRadius = 20
+        }
+    }
+    
+    func isLoading(_ isOn: Bool){
+        if isOn{
+            imageView.isHidden = true
+            loadingIndicator.isHidden = false
+            loadingIndicator.startAnimating()
+        } else {
+            imageView.isHidden = false
+            loadingIndicator.isHidden = true
+            loadingIndicator.stopAnimating()
         }
     }
 }

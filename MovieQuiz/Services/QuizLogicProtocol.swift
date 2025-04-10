@@ -6,5 +6,5 @@ protocol QuizLogicProtocol{
     var questionsAmount: Int { get }
     
     func showAnswerResult(userAnswer: Bool)
-    func requestFirstQuestion()
+    func loadData()
 }

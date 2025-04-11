@@ -1,4 +1,3 @@
-import Foundation
 import UIKit
 
 final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
@@ -15,13 +14,45 @@ final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
 
     init(delegate: QuizLogicDelegate) {
         self.delegate = delegate
-        let questionFactory = QuestionFactory()
-        questionFactory.delegate = self
-        self.questionFactory = questionFactory
-
+        questionFactory = QuestionFactory(
+            delegate: self, moviesLoader: MoviesLoader())
         let alertPresenter = ResultAlertPresenter()
         alertPresenter.delegate = delegate.self as? AlertPresenterDelegate
         self.alertPresenter = alertPresenter
+    }
+
+    private func showNextQuestionOrResults() {
+        if questionNumber == questionsAmount - 1 {
+            statisticService.store(
+                gameResult: GameResult(
+                    correct: correctAnswers, total: questionsAmount,
+                    date: Date()))
+            showQuizResult()
+        } else {
+            questionNumber += 1
+            questionFactory?.requestNextQuestion()
+        }
+        delegate?.controlBorder(reset: true, isCorrect: false)  // optimise
+    }
+
+    private func convert(model: QuizQuestion) -> QuizStepViewModel? {
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber:
+                "\(questionNumber + 1)/\(questionsAmount)")
+    }
+
+    private func showNetworkError(message: String) {
+        let model = AlertModel(
+            title: "Ошибка",
+            text: message,
+            buttonText: "Попробовать еще раз"
+        ) { [weak self] in
+            guard let self = self else { return }
+            questionFactory?.loadData()
+        }
+        alertPresenter?.showAlert(alertData: model)
     }
 
     func showQuizResult() {
@@ -57,32 +88,11 @@ final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
             isCorrect: isCorrect, nextStep: showNextQuestionOrResults)
     }
 
-    private func showNextQuestionOrResults() {
-        if questionNumber == questionsAmount - 1 {
-            statisticService.store(
-                gameResult: GameResult(
-                    correct: correctAnswers, total: questionsAmount,
-                    date: Date()))
-            showQuizResult()
-        } else {
-            questionNumber += 1
-            questionFactory?.requestNextQuestion()
-        }
-        delegate?.controlBorder(reset: true, isCorrect: false)  // optimise
+    func loadData() {
+        questionFactory?.loadData()
     }
 
-    private func convert(model: QuizQuestion) -> QuizStepViewModel? {
-        return QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber:
-                "\(questionNumber + 1)/\(questionsAmount)")
-    }
-
-    func requestFirstQuestion() {
-        questionFactory?.requestNextQuestion()
-    }
-
+    // MARK: - QuestionFactoryDelegate
     func didRecieveNextQuestion(question: QuizQuestion?) {
         guard let question else { return }
         currentQuestion = question
@@ -90,5 +100,14 @@ final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
         if let viewModel {
             delegate?.showQuizStep(quiz: viewModel)
         }
+    }
+
+    func didLoadDataFromServer() {
+        delegate?.isLoading(false)
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: any Error) {
+        showNetworkError(message: error.localizedDescription)
     }
 }

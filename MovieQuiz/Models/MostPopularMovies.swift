@@ -1,6 +1,6 @@
 import Foundation
 
-struct MostPopularMovies: Codable{
+struct MostPopularMovies: Codable {
     let error: String
     let movies: [MostPopularMovie]
     
@@ -10,7 +10,7 @@ struct MostPopularMovies: Codable{
     }
 }
 
-struct MostPopularMovie: Codable{
+struct MostPopularMovie: Codable {
     let title: String
     let rating: String
     let imageUrl: URL

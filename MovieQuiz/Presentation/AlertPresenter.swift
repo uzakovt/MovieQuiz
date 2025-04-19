@@ -1,8 +1,8 @@
 import UIKit
 
-final class ResultAlertPresenter: AlertPresenterProtocol {
+final class AlertPresenter: AlertPresenterProtocol {
     weak var delegate: AlertPresenterDelegate?
-    func showAlert(alertData: AlertModel?) {
+    func showAlert(alertData: AlertModel?, id: String) {
         guard let alertData else {
             delegate?.didPresentAlert(alert: nil)
             return
@@ -15,8 +15,8 @@ final class ResultAlertPresenter: AlertPresenterProtocol {
             _ in
             alertData.completion()
         }
-
         alert.addAction(action)
+        alert.view.accessibilityIdentifier = id
         delegate?.didPresentAlert(alert: alert)
     }
 }

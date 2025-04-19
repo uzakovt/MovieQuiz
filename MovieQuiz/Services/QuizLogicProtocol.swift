@@ -7,4 +7,5 @@ protocol QuizLogicProtocol{
     
     func showAnswerResult(userAnswer: Bool)
     func loadData()
+    func convert(model: QuizQuestion) -> QuizStepViewModel?
 }

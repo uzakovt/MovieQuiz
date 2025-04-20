@@ -1,6 +1,6 @@
 import Foundation
 
-protocol QuizLogicProtocol{
+protocol QuizPresenterProtocol{
     var questionNumber: Int { get }
     var correctAnswers: Int { get }
     var questionsAmount: Int { get }

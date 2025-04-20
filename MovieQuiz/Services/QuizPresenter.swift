@@ -1,18 +1,18 @@
 import UIKit
 
-final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
+final class QuizPresenter: QuizPresenterProtocol, QuestionFactoryDelegate {
     var questionNumber: Int = 0
     var correctAnswers: Int = 0
     var questionsAmount: Int = 10
 
-    weak var delegate: QuizLogicDelegate?
+    weak var delegate: QuizPresenterDelegate?
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticServiceProtocol =
         StatisticServiceImplementation()
 
-    init(delegate: QuizLogicDelegate) {
+    init(delegate: QuizPresenterDelegate) {
         self.delegate = delegate
         questionFactory = QuestionFactory(
             delegate: self, moviesLoader: MoviesLoader())
@@ -64,7 +64,9 @@ final class QuizLogic: QuizLogicProtocol, QuestionFactoryDelegate {
         }
         delegate?.controlBorder(reset: false, isCorrect: isCorrect)
         delegate?.showAnswerResult(
-            isCorrect: isCorrect, nextStep: showNextQuestionOrResults)
+            isCorrect: isCorrect,
+            nextStep: showNextQuestionOrResults
+        )
     }
     
     func isLoading(_ isLoading: Bool) {

@@ -1,7 +1,7 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
-    private var quizLogic: QuizLogicProtocol?
+    private var quizLogic: QuizPresenterProtocol?
 
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var counterLabel: UILabel!
@@ -12,7 +12,7 @@ final class MovieQuizViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        quizLogic = QuizLogic(delegate: self)
+        quizLogic = QuizPresenter(delegate: self)
         
         isLoading(true)
         quizLogic?.loadData()
@@ -39,7 +39,7 @@ extension MovieQuizViewController: AlertPresenterDelegate {
 }
 
 // MARK: - QuizLogicDelegate
-extension MovieQuizViewController: QuizLogicDelegate {
+extension MovieQuizViewController: QuizPresenterDelegate {
     func showQuizStep(quiz step: QuizStepViewModel) {
         DispatchQueue.main.async {
             self.isLoading(false)
@@ -70,11 +70,10 @@ extension MovieQuizViewController: QuizLogicDelegate {
     }
     
     func isLoading(_ isOn: Bool){
+        imageView.isHidden = isOn
         if isOn{
-            imageView.isHidden = true
             loadingIndicator.startAnimating()
         } else {
-            imageView.isHidden = false
             loadingIndicator.stopAnimating()
         }
     }

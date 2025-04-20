@@ -7,9 +7,6 @@ protocol MoviesLoading {
 
 struct MoviesLoader: MoviesLoading {
     
-    init(networkClient: NetworkRouting = NetworkClient()) {
-        self.networkClient = networkClient
-    }
     // MARK: - NetworkClient
     private let networkClient: NetworkRouting
     
@@ -22,6 +19,10 @@ struct MoviesLoader: MoviesLoading {
             preconditionFailure("Unable to construct mostPopularMoviesUrl")
         }
         return url
+    }
+    
+    init(networkClient: NetworkRouting = NetworkClient()) {
+        self.networkClient = networkClient
     }
 
     // MARK: - Load data

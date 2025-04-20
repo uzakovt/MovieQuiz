@@ -2,12 +2,12 @@ import XCTest
 
 @testable import MovieQuiz
 
-final class QuizLogicTests: XCTestCase {
+final class QuizPresenterTests: XCTestCase {
 
     func testConvertModel() throws {
-        let viewControllerMock: QuizLogicDelegate =
+        let viewControllerMock: QuizPresenterDelegate =
             MovieQuizViewControllerMock()
-        let quizLogic: QuizLogicProtocol = QuizLogic(
+        let quizLogic: QuizPresenterProtocol = QuizPresenter(
             delegate: viewControllerMock)
 
         let mockData = UIImage(named: "The Green Knight")?.pngData()
@@ -22,7 +22,7 @@ final class QuizLogicTests: XCTestCase {
     }
 }
 
-final class MovieQuizViewControllerMock: QuizLogicDelegate {
+final class MovieQuizViewControllerMock: QuizPresenterDelegate {
     func controlBorder(reset: Bool, isCorrect: Bool) {}
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {}
     func showQuizStep(quiz step: MovieQuiz.QuizStepViewModel) {}

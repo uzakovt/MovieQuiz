@@ -1,18 +1,18 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController {
-    private var quizLogic: QuizLogicProtocol?
+    private var quizLogic: QuizPresenterProtocol?
 
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var counterLabel: UILabel!
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var yesButton: UIButton!
     @IBOutlet private weak var noButton: UIButton!
-    @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var loadingIndicator: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        quizLogic = QuizLogic(delegate: self)
+        quizLogic = QuizPresenter(delegate: self)
         
         isLoading(true)
         quizLogic?.loadData()
@@ -21,8 +21,12 @@ final class MovieQuizViewController: UIViewController {
     @IBAction private func answerButtonPressed(_ sender: UIButton) {
         let userAnswer = sender.tag != 0
         quizLogic?.showAnswerResult(userAnswer: userAnswer)
-        noButton.isEnabled = false
-        yesButton.isEnabled = false
+        setAnswerButtonsState(isEnabled: false)
+    }
+    
+    private func setAnswerButtonsState(isEnabled: Bool) {
+        yesButton.isEnabled = isEnabled
+        noButton.isEnabled = isEnabled
     }
 }
 
@@ -35,9 +39,10 @@ extension MovieQuizViewController: AlertPresenterDelegate {
 }
 
 // MARK: - QuizLogicDelegate
-extension MovieQuizViewController: QuizLogicDelegate {
+extension MovieQuizViewController: QuizPresenterDelegate {
     func showQuizStep(quiz step: QuizStepViewModel) {
         DispatchQueue.main.async {
+            self.isLoading(false)
             self.imageView.image = step.image
             self.counterLabel.text = step.questionNumber
             self.textLabel.text = step.question
@@ -45,10 +50,9 @@ extension MovieQuizViewController: QuizLogicDelegate {
     }
 
     func showAnswerResult(isCorrect: Bool, nextStep: @escaping () -> Void) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1){
             nextStep()
-            self.noButton.isEnabled = true
-            self.yesButton.isEnabled = true
+            self.setAnswerButtonsState(isEnabled: true)
         }
     }
 
@@ -66,13 +70,10 @@ extension MovieQuizViewController: QuizLogicDelegate {
     }
     
     func isLoading(_ isOn: Bool){
+        imageView.isHidden = isOn
         if isOn{
-            imageView.isHidden = true
-            loadingIndicator.isHidden = false
             loadingIndicator.startAnimating()
         } else {
-            imageView.isHidden = false
-            loadingIndicator.isHidden = true
             loadingIndicator.stopAnimating()
         }
     }
